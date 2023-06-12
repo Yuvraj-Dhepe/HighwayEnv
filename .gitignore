@@ -1,3 +1,6 @@
+# Ignored Folders
+venv/
+
 # Compiled sources
 *.pyc
 build/
