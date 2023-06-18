@@ -51,7 +51,7 @@ class CustEnvY(AbstractEnv):
             "other_vehicles": 1,
             "screen_width": 900,
             "screen_height": 600,
-            "centering_position": [0.6, 0.6],
+            "centering_position": [0.7002, 0.7],
         })
         return config
 
