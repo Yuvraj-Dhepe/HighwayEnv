@@ -51,7 +51,7 @@ class CustEnvY(AbstractEnv):
             "other_vehicles": 1,
             "screen_width": 900,
             "screen_height": 600,
-            "centering_position": [0.6, 0.95],
+            "centering_position": [0.6, 0.92],
         })
         return config
 
@@ -118,21 +118,21 @@ class CustEnvY(AbstractEnv):
         center2 = [20,-55]
         radii2 = 10 
         net.add_lane("d", "e",
-                     CircularLane(center2, radii2, np.deg2rad(90), np.deg2rad(-90), width=5, 
-                                  clockwise=True, line_types=(LineType.CONTINUOUS, LineType.NONE),
+                     CircularLane(center2, radii2+5, np.deg2rad(90), np.deg2rad(270), width=5, 
+                                  clockwise=True, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
                                   speed_limit=speedlimits[4]))
         net.add_lane("d", "e",
-                     CircularLane(center2, radii2+5, np.deg2rad(90), np.deg2rad(-90), width=5,
-                                  clockwise=True, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
+                     CircularLane(center2, radii2, np.deg2rad(90), np.deg2rad(270), width=5,
+                                  clockwise=True, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
                                   speed_limit=speedlimits[4]))
         
         # 5 Straight Lane L -> R
-        net.add_lane("e", "f", StraightLane([20, -65], [60, -65],
-                                                    line_types=(LineType.NONE, LineType.CONTINUOUS), width=5,
-                                                    speed_limit=speedlimits[5]))
         net.add_lane("e", "f", StraightLane([20, -70], [60, -70],
                                             line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5,
                                             speed_limit=speedlimits[5]))
+        net.add_lane("e", "f", StraightLane([20, -65], [60, -65],
+                                                    line_types=(LineType.NONE, LineType.CONTINUOUS), width=5,
+                                                    speed_limit=speedlimits[5]))
         
         # 6 Circular Arc - 3
         center3 = [60,-80]
