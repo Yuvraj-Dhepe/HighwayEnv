@@ -5,8 +5,7 @@ from stable_baselines3 import DQN, DDPG, PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.vec_env import SubprocVecEnv
-
-import highway_env
+from highway_env.envs.cust_env_m import *
 
 
 TRAIN = True
@@ -14,7 +13,7 @@ TRAIN = True
 if __name__ == '__main__':
     n_cpu = 6
     batch_size = 64
-    env = make_vec_env("racetrack-v0", n_envs=n_cpu, vec_env_cls=SubprocVecEnv)
+    env = gym.make("rt-m-v0")
     model = PPO("MlpPolicy",
                 env,
                 policy_kwargs=dict(net_arch=[dict(pi=[256, 256], vf=[256, 256])]),

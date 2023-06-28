@@ -1,0 +1,48 @@
+Collecting gymnasium
+  Using cached gymnasium-0.28.1-py3-none-any.whl (925 kB)
+Collecting pygame
+  Downloading pygame-2.5.0-cp311-cp311-win_amd64.whl (10.5 MB)
+     --------------------------------------- 10.5/10.5 MB 12.6 MB/s eta 0:00:00
+Collecting matplotlib
+  Using cached matplotlib-3.7.1-cp311-cp311-win_amd64.whl (7.6 MB)
+Collecting pandas
+  Using cached pandas-2.0.2-cp311-cp311-win_amd64.whl (10.6 MB)
+Collecting scipy
+  Downloading scipy-1.11.0-cp311-cp311-win_amd64.whl (43.9 MB)
+     ---------------------------------------- 43.9/43.9 MB 6.5 MB/s eta 0:00:00
+Requirement already satisfied: numpy>=1.21.0 in c:\users\asus\documents\github\highwayenvreal\venv\lib\site-packages (from gymnasium) (1.25.0)
+Collecting jax-jumpy>=1.0.0 (from gymnasium)
+  Using cached jax_jumpy-1.0.0-py3-none-any.whl (20 kB)
+Collecting cloudpickle>=1.2.0 (from gymnasium)
+  Using cached cloudpickle-2.2.1-py3-none-any.whl (25 kB)
+Collecting typing-extensions>=4.3.0 (from gymnasium)
+  Using cached typing_extensions-4.6.3-py3-none-any.whl (31 kB)
+Collecting farama-notifications>=0.0.1 (from gymnasium)
+  Using cached Farama_Notifications-0.0.4-py3-none-any.whl (2.5 kB)
+Collecting contourpy>=1.0.1 (from matplotlib)
+  Downloading contourpy-1.1.0-cp311-cp311-win_amd64.whl (470 kB)
+     -------------------------------------- 470.9/470.9 kB 9.8 MB/s eta 0:00:00
+Collecting cycler>=0.10 (from matplotlib)
+  Using cached cycler-0.11.0-py3-none-any.whl (6.4 kB)
+Collecting fonttools>=4.22.0 (from matplotlib)
+  Downloading fonttools-4.40.0-cp311-cp311-win_amd64.whl (1.9 MB)
+     ---------------------------------------- 1.9/1.9 MB 12.4 MB/s eta 0:00:00
+Collecting kiwisolver>=1.0.1 (from matplotlib)
+  Using cached kiwisolver-1.4.4-cp311-cp311-win_amd64.whl (55 kB)
+Collecting packaging>=20.0 (from matplotlib)
+  Using cached packaging-23.1-py3-none-any.whl (48 kB)
+Collecting pillow>=6.2.0 (from matplotlib)
+  Using cached Pillow-9.5.0-cp311-cp311-win_amd64.whl (2.5 MB)
+Collecting pyparsing>=2.3.1 (from matplotlib)
+  Downloading pyparsing-3.1.0-py3-none-any.whl (102 kB)
+     -------------------------------------- 102.6/102.6 kB 5.8 MB/s eta 0:00:00
+Collecting python-dateutil>=2.7 (from matplotlib)
+  Using cached python_dateutil-2.8.2-py2.py3-none-any.whl (247 kB)
+Collecting pytz>=2020.1 (from pandas)
+  Using cached pytz-2023.3-py2.py3-none-any.whl (502 kB)
+Collecting tzdata>=2022.1 (from pandas)
+  Using cached tzdata-2023.3-py2.py3-none-any.whl (341 kB)
+Collecting six>=1.5 (from python-dateutil>=2.7->matplotlib)
+  Using cached six-1.16.0-py2.py3-none-any.whl (11 kB)
+Installing collected packages: pytz, farama-notifications, tzdata, typing-extensions, six, scipy, pyparsing, pygame, pillow, packaging, kiwisolver, jax-jumpy, fonttools, cycler, contourpy, cloudpickle, python-dateutil, gymnasium, pandas, matplotlib
+Successfully installed cloudpickle-2.2.1 contourpy-1.1.0 cycler-0.11.0 farama-notifications-0.0.4 fonttools-4.40.0 gymnasium-0.28.1 jax-jumpy-1.0.0 kiwisolver-1.4.4 matplotlib-3.7.1 packaging-23.1 pandas-2.0.2 pillow-9.5.0 pygame-2.5.0 pyparsing-3.1.0 python-dateutil-2.8.2 pytz-2023.3 scipy-1.11.0 six-1.16.0 typing-extensions-4.6.3 tzdata-2023.3

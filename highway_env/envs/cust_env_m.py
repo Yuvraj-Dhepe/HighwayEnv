@@ -49,11 +49,9 @@ class CustEnvM(AbstractEnv):
             "action_reward": -0.3,
             "controlled_vehicles": 1,
             "other_vehicles": 1,
-            "screen_width": 1000,
+            "screen_width": 600,
             "screen_height": 600,
-            "centering_position": [0.5, 0.7],
-            #[1] increase Track goes down
-            #[0] increase Track goes right
+            "centering_position": [0.6, 0.9],
         })
         return config
 
@@ -87,50 +85,90 @@ class CustEnvM(AbstractEnv):
         net = RoadNetwork()
 
         # Set Speed Limits for Road Sections - Straight, Turn20, Straight, Turn 15, Turn15, Straight, Turn25x2, Turn18
-        speedlimits = [None, 10, 10, 10, 10, 3, 3, 0, 0]
+        speedlimits = [None, 10, 10, 10, 10, 10, 10, 10, 10]
 
         # Initialise First Lane
-        lane = StraightLane([10, 0], [100, 0], line_types=(LineType.CONTINUOUS, LineType.NONE), width=5, speed_limit=speedlimits[1])
+        lane = StraightLane([42, 0], [58, 0], line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5, speed_limit=speedlimits[1])
         self.lane = lane
 
         # Add Lanes to Road Network - Straight Section  #+5= scendiamo di 5 nella coordinata corrispondente
         net.add_lane("a", "b", lane) #inner lane
-        net.add_lane("a", "b", StraightLane([10, 5], [100, 5], line_types=(LineType.STRIPED, LineType.CONTINUOUS), width=5, speed_limit=speedlimits[1]))
+        net.add_lane("a", "b", StraightLane([42, 5], [58, 5], line_types=(LineType.NONE, LineType.CONTINUOUS), width=5, speed_limit=speedlimits[1]))
+
+        # 3 - SineLane
+       
+        lane2=SineLane([58, 0], [90, 0],  amplitude=3, pulsation=0.2,phase=0,
+                                            line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5,
+                                            speed_limit=speedlimits[3])
+        lane3=SineLane([58, 5], [90, 5],  amplitude=3, pulsation=0.2,phase=0,
+                                          line_types=(LineType.NONE, LineType.CONTINUOUS), width=5,
+                                            speed_limit=speedlimits[3])
+        net.add_lane("b", "c", lane2)
+        net.add_lane("b", "c", lane3)
+
+        lane3 = StraightLane([90, 0], [100, 0], line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5, speed_limit=speedlimits[1])
+        net.add_lane("c","d",lane3)
+        net.add_lane("c", "d", StraightLane([90, 5], [100, 5], line_types=(LineType.NONE, LineType.CONTINUOUS), width=5, speed_limit=speedlimits[1]))
+       
+       
+        #coords=lane2.local_coordinates(np.array([100, 0]))
 
         # 2 - Circular Arc #1
-        center1 = [100, -20] #il centro deve avere x parallela all'ultimo punto 
-        radii1 = 20
-        net.add_lane("b", "c",
+        #center1 = [100, -20] #il centro deve avere x parallela all'ultimo punto 
+        #center1=[coords[0], coords[1]]
+        center1=[100,-40]
+        radii1 = 40
+        net.add_lane("d", "e",
                      CircularLane(center1, radii1, np.deg2rad(90), np.deg2rad(-90), width=5, #angolo della curva 
-                                  clockwise=False, line_types=(LineType.CONTINUOUS, LineType.NONE),
+                                  clockwise=False, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
                                   speed_limit=speedlimits[2]))
-        net.add_lane("b", "c",
+        net.add_lane("d", "e",
                      CircularLane(center1, radii1+5, np.deg2rad(90), np.deg2rad(-90), width=5,
-                                  clockwise=False, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
+                                  clockwise=False, line_types=(LineType.NONE, LineType.CONTINUOUS),
                                   speed_limit=speedlimits[2]))
 
         # 3 - Vertical Straight
-        net.add_lane("c", "d", StraightLane([100, -40], [10, -40],
-                                            line_types=(LineType.CONTINUOUS, LineType.NONE), width=5,
+        net.add_lane("e", "f", StraightLane([100, -80], [42, -80],
+                                            line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5,
                                             speed_limit=speedlimits[3]))
-        net.add_lane("c", "d", StraightLane([100, -45], [10, -45],
-                                            line_types=(LineType.STRIPED, LineType.CONTINUOUS), width=5,
+        net.add_lane("e", "f", StraightLane([100, -85], [42, -85],
+                                            line_types=(LineType.NONE, LineType.CONTINUOUS), width=5,
                                             speed_limit=speedlimits[3]))
-
-        # Dummy Straight line
         
-        # 4 - Circular Arc #2
-        center2 = [10, -20]
-        radii2 = 20
-        net.add_lane("d", "a",
-                     CircularLane(center2, radii2, np.deg2rad(270), np.deg2rad(90), width=5, #scelgo l'angolo della curca e in base a quello calcolo lo starting point, usare funzione di road class
-                                  clockwise = False, line_types=(LineType.CONTINUOUS,LineType.NONE),
-                                  speed_limit=speedlimits[4]))
-        net.add_lane("d", "a",
-                     CircularLane(center2, radii2+5, np.deg2rad(270), np.deg2rad(90), width=5,
-                                  clockwise=False, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
-                                  speed_limit=speedlimits[4]))
-
+        #4-circ lane:
+        center2=[42,-70]
+        radii2 = 10
+        net.add_lane("f", "g",
+                     CircularLane(center2, radii2, np.deg2rad(-90), np.deg2rad(-270), width=5, #angolo della curva 
+                                  clockwise=False, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
+                                  speed_limit=speedlimits[2]))
+        net.add_lane("f", "g",
+                     CircularLane(center2, radii2+5, np.deg2rad(-90), np.deg2rad(-270), width=5,
+                                  clockwise=False, line_types=(LineType.NONE,LineType.CONTINUOUS),
+                                  speed_limit=speedlimits[2]))
+      
+        #5- circ arc:
+        center3=[42,-40]
+        radii3 = 20
+        net.add_lane("g", "h",
+                     CircularLane(center3, radii3, np.deg2rad(-90), np.deg2rad(90), width=5, #angolo della curva 
+                                  clockwise=True, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
+                                  speed_limit=speedlimits[2]))
+        net.add_lane("g", "h",
+                     CircularLane(center3, radii3-5, np.deg2rad(-90), np.deg2rad(90), width=5,
+                                  clockwise=True, line_types=(LineType.NONE, LineType.CONTINUOUS),
+                                  speed_limit=speedlimits[2]))
+       
+        center4=[42,-10]
+        radii4 = 10
+        net.add_lane("h", "a",
+                     CircularLane(center4, radii4, np.deg2rad(-90), np.deg2rad(-270), width=5, #angolo della curva 
+                                  clockwise=False, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
+                                  speed_limit=speedlimits[2]))
+        net.add_lane("h", "a",
+                     CircularLane(center4, radii4+5, np.deg2rad(-90), np.deg2rad(-270), width=5,
+                                  clockwise=False, line_types=(LineType.NONE,LineType.CONTINUOUS),
+                                  speed_limit=speedlimits[2]))
       
 
         road = Road(network=net, np_random=self.np_random, record_history=self.config["show_trajectories"])
@@ -177,3 +215,7 @@ class CustEnvM(AbstractEnv):
                     break
             else:
                 self.road.vehicles.append(vehicle)
+
+
+
+

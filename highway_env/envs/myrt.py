@@ -35,7 +35,7 @@ class MyRaceTrack(AbstractEnv):
                 "align_to_vehicle_axes": True
             },
             "action": {
-                "type": "DiscreteAction",
+                "type": "ContinuousAction",
                 "longitudinal": False,
                 "lateral": True,
                 "target_speeds": [0, 5, 10]
@@ -215,3 +215,6 @@ class MyRaceTrack(AbstractEnv):
                     break
             else:
                 self.road.vehicles.append(vehicle)
+
+
+
