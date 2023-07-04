@@ -85,7 +85,7 @@ class CustEnvY(AbstractEnv):
         net = RoadNetwork()
 
         # Set Speed Limits for Road Sections - Straight, Turn20, Straight, Turn 15, Turn15, Straight, Turn25x2, Turn18
-        speedlimits = [None, 3, 3, 3, 3, 3, 3, 3, 3]
+        speedlimits = [None, 15,15, 15, 15, 15, 15, 15, 15]
         lane = StraightLane([0, 0], [60, 0], line_types=(LineType.CONTINUOUS, LineType.NONE), width=5, speed_limit=speedlimits[1])
         self.lane = lane
 
@@ -108,7 +108,7 @@ class CustEnvY(AbstractEnv):
         
         # 3 Straight Lane: R -> L
         net.add_lane("c", "d", StraightLane([60, -40], [20, -40],
-                                                    line_types=(LineType.CONTINUOUS, LineType.NONE), width=5,
+                                                    line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5,
                                                     speed_limit=speedlimits[3]))
         net.add_lane("c", "d", StraightLane([60, -45], [20, -45],
                                             line_types=(LineType.STRIPED, LineType.CONTINUOUS), width=5,
@@ -119,11 +119,11 @@ class CustEnvY(AbstractEnv):
         radii2 = 10 
         net.add_lane("d", "e",
                      CircularLane(center2, radii2+5, np.deg2rad(90), np.deg2rad(270), width=5, 
-                                  clockwise=True, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
+                                  clockwise=True, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
                                   speed_limit=speedlimits[4]))
         net.add_lane("d", "e",
                      CircularLane(center2, radii2, np.deg2rad(90), np.deg2rad(270), width=5,
-                                  clockwise=True, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
+                                  clockwise=True, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
                                   speed_limit=speedlimits[4]))
         
         # 5 Straight Lane L -> R
@@ -157,11 +157,11 @@ class CustEnvY(AbstractEnv):
         # 8 Circular Arc - 4
         center4 = [0,-45]
         radii4 = 45 
-        net.add_lane("f", "g",
+        net.add_lane("h", "a",
                      CircularLane(center4, radii4, np.deg2rad(270), np.deg2rad(90), width=5, #angolo della curva 
                                   clockwise=False, line_types=(LineType.CONTINUOUS, LineType.NONE),
                                   speed_limit=speedlimits[8]))
-        net.add_lane("f", "g",
+        net.add_lane("h", "a",
                      CircularLane(center4, radii4+5, np.deg2rad(270), np.deg2rad(90), width=5,
                                   clockwise=False, line_types=(LineType.STRIPED, LineType.CONTINUOUS),
                                   speed_limit=speedlimits[8]))
@@ -204,6 +204,7 @@ class CustEnvY(AbstractEnv):
                                                   high=self.road.network.get_lane(random_lane_index).length
                                               ),
                                               speed=6+rng.uniform(high=3))
+            vehicle.randomize()
             # Prevent early collisions
             for v in self.road.vehicles:
                 if np.linalg.norm(vehicle.position - v.position) < 20:
