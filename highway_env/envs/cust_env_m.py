@@ -8,6 +8,7 @@ from highway_env.envs.common.abstract import AbstractEnv
 from highway_env.road.lane import LineType, StraightLane, CircularLane, SineLane
 from highway_env.road.road import Road, RoadNetwork
 from highway_env.vehicle.behavior import IDMVehicle
+from highway_env.vehicle.objects import Obstacle
 
 
 class CustEnvM(AbstractEnv):
@@ -38,17 +39,18 @@ class CustEnvM(AbstractEnv):
                 "type": "ContinuousAction",
                 "longitudinal": False,
                 "lateral": True,
-                "target_speeds": [0, 5, 10]
+                "target_speeds": [0, 10, 40]
             },
             "simulation_frequency": 15,
             "policy_frequency": 5,
             "duration": 300,
             "collision_reward": -1,
-            "lane_centering_cost": 4,
-            "lane_centering_reward": 1,
+            "lane_centering_cost": 4, #SETTING IT POSITVIE
+            "lane_centering_reward": 1,  # edit to 0.8?
+            "right_lane_reward": 0.1,  #added
             "action_reward": -0.3,
             "controlled_vehicles": 1,
-            "other_vehicles": 1,
+            "other_vehicles": 2,  #edited, before: 2
             "screen_width": 600,
             "screen_height": 600,
             "centering_position": [0.6, 0.9],
@@ -63,12 +65,16 @@ class CustEnvM(AbstractEnv):
         return reward
 
     def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
+        neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)  ###added
         _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
+        lane = self.vehicle.target_lane_index[2] if isinstance(self.vehicle, IDMVehicle)  else self.vehicle.lane_index[2]    ### added
+
         return {
             "lane_centering_reward": 1/(1+self.config["lane_centering_cost"]*lateral**2),
             "action_reward": np.linalg.norm(action),
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
+            "right_lane_reward": lane / max(len(neighbours) - 1, 1),  ##added
         }
 
     def _is_terminated(self) -> bool:
@@ -85,11 +91,13 @@ class CustEnvM(AbstractEnv):
         net = RoadNetwork()
 
         # Set Speed Limits for Road Sections - Straight, Turn20, Straight, Turn 15, Turn15, Straight, Turn25x2, Turn18
-        speedlimits = [None, 10, 10, 10, 10, 10, 10, 10, 10]
+        speedlimits = [None, 20, 30, 40, 60, 10, 10, 10, 10]
 
         # Initialise First Lane
         lane = StraightLane([42, 0], [58, 0], line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5, speed_limit=speedlimits[1])
         self.lane = lane
+       
+
 
         # Add Lanes to Road Network - Straight Section  #+5= scendiamo di 5 nella coordinata corrispondente
         net.add_lane("a", "b", lane) #inner lane
@@ -99,10 +107,10 @@ class CustEnvM(AbstractEnv):
        
         lane2=SineLane([58, 0], [90, 0],  amplitude=3, pulsation=0.2,phase=0,
                                             line_types=(LineType.CONTINUOUS, LineType.STRIPED), width=5,
-                                            speed_limit=speedlimits[3])
+                                            speed_limit=speedlimits[1])
         lane3=SineLane([58, 5], [90, 5],  amplitude=3, pulsation=0.2,phase=0,
                                           line_types=(LineType.NONE, LineType.CONTINUOUS), width=5,
-                                            speed_limit=speedlimits[3])
+                                            speed_limit=speedlimits[1])
         net.add_lane("b", "c", lane2)
         net.add_lane("b", "c", lane3)
 
@@ -141,11 +149,11 @@ class CustEnvM(AbstractEnv):
         net.add_lane("f", "g",
                      CircularLane(center2, radii2, np.deg2rad(-90), np.deg2rad(-270), width=5, #angolo della curva 
                                   clockwise=False, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
-                                  speed_limit=speedlimits[2]))
+                                  speed_limit=speedlimits[3]))
         net.add_lane("f", "g",
                      CircularLane(center2, radii2+5, np.deg2rad(-90), np.deg2rad(-270), width=5,
                                   clockwise=False, line_types=(LineType.NONE,LineType.CONTINUOUS),
-                                  speed_limit=speedlimits[2]))
+                                  speed_limit=speedlimits[3]))
       
         #5- circ arc:
         center3=[42,-40]
@@ -164,11 +172,11 @@ class CustEnvM(AbstractEnv):
         net.add_lane("h", "a",
                      CircularLane(center4, radii4, np.deg2rad(-90), np.deg2rad(-270), width=5, #angolo della curva 
                                   clockwise=False, line_types=(LineType.CONTINUOUS, LineType.STRIPED),
-                                  speed_limit=speedlimits[2]))
+                                  speed_limit=speedlimits[4]))
         net.add_lane("h", "a",
                      CircularLane(center4, radii4+5, np.deg2rad(-90), np.deg2rad(-270), width=5,
                                   clockwise=False, line_types=(LineType.NONE,LineType.CONTINUOUS),
-                                  speed_limit=speedlimits[2]))
+                                  speed_limit=speedlimits[4]))
       
 
         road = Road(network=net, np_random=self.np_random, record_history=self.config["show_trajectories"])
@@ -178,7 +186,8 @@ class CustEnvM(AbstractEnv):
         """
         Populate a road with several vehicles on the highway and on the merging lane, as well as an ego-vehicle.
         """
-        rng = self.np_random
+        ##rng = self.np_random
+        rng= np.random.default_rng() ###
 
         # Controlled vehicles
         self.controlled_vehicles = []
@@ -191,7 +200,7 @@ class CustEnvM(AbstractEnv):
             self.controlled_vehicles.append(controlled_vehicle)
             self.road.vehicles.append(controlled_vehicle)
 
-        # Front vehicle
+        # Front vehicle--> blue vehicle
         vehicle = IDMVehicle.make_on_lane(self.road, ("b", "c", lane_index[-1]),
                                           longitudinal=rng.uniform(
                                               low=0,
@@ -201,20 +210,33 @@ class CustEnvM(AbstractEnv):
         self.road.vehicles.append(vehicle)
 
         # Other vehicles
-        for i in range(rng.integers(self.config["other_vehicles"])):
-            random_lane_index = self.road.network.random_lane_index(rng)
+        for i in range(self.config["other_vehicles"]):#rng.integers(self.config["other_vehicles"])):
+            random_lane_index = list(self.road.network.random_lane_index(rng))
+            random_lane_index[-1]= lane_index[-1]
+            random_lane_index=tuple(random_lane_index)
             vehicle = IDMVehicle.make_on_lane(self.road, random_lane_index,
                                               longitudinal=rng.uniform(
                                                   low=0,
                                                   high=self.road.network.get_lane(random_lane_index).length
                                               ),
                                               speed=6+rng.uniform(high=3))
+            vehicle.randomize_behavior()
+       
+
+
             # Prevent early collisions
             for v in self.road.vehicles:
                 if np.linalg.norm(vehicle.position - v.position) < 20:
                     break
             else:
-                self.road.vehicles.append(vehicle)
+                self.road.vehicles.append(vehicle)  
+         #Obstacle:
+        random_lane_index2 = list(self.road.network.random_lane_index(rng))
+        random_lane_index2[-1]= lane_index[-1]
+        random_lane_index2=tuple(random_lane_index)
+        lane=self.road.network.get_lane(random_lane_index2)
+        obst = Obstacle(self.road, lane.position(longitudinal=rng.uniform(low=0,high=lane.length),lateral=0.5))
+        self.road.objects.append(obst)
 
 
 

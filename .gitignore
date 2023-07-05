@@ -1,5 +1,6 @@
 # Ignored Folders
 venv/
+models/
 
 # Compiled sources
 *.pyc
