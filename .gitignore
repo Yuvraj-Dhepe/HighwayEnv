@@ -1,5 +1,6 @@
 # Ignored Folders
 venv/
+y_models/
 models/
 
 # Compiled sources

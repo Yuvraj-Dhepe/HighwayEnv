@@ -17,10 +17,9 @@ from highway_env.envs.cust_env_m import *
 import matplotlib.pyplot as plt
 
 
-rt_y = gym.make("rt-m-v0",render_mode = "rgb_array")
-obs, info = rt_y.reset()
+env = gym.make("rt-y-v0",render_mode = "human")
+obs, info = env.reset()
+# print(env.action_space)
 
-
-img = rt_y.render()
-plt.imshow(img)
-plt.show()
+for i in range(1000):
+    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
