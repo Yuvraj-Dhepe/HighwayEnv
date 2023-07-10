@@ -8,7 +8,7 @@ TRAIN = True
 
 if __name__ == '__main__':
     # Create the environment
-    env = gym.make("rt-m-v0") #render_mode="human")
+    env = gym.make("rt-ell-v0") #render_mode="human")
     obs, info = env.reset()
 
     # Create the model
@@ -26,14 +26,14 @@ if __name__ == '__main__':
     if TRAIN:
         #tensorboard --logdir ./C:/Users/asus/Documents/GitHub/HighwayEn
         model.learn(total_timesteps=int(1e5))
-        model.save(r"C:\Users\asus\Documents\GitHub\HighwayEnvReal\models\model_addv")
+        model.save(r"C:\Users\asus\Documents\GitHub\HighwayEnvReal\models\model_simple_track")
         del model
 
     # Run the algorithm
-    model = PPO.load(r"C:\Users\asus\Documents\GitHub\HighwayEnvReal\models\model_addv.zip", env=env)
+    model = PPO.load(r"C:\Users\asus\Documents\GitHub\HighwayEnvReal\models\model_simple_track.zip", env=env)
 
-    env = gym.make("rt-m-v0", render_mode='rgb_array')
-    env = RecordVideo(env, video_folder=r"C:\Users\asus\Documents\GitHub\HighwayEnvReal\models\model_addv", episode_trigger=lambda e: True)
+    env = gym.make("rt-ell-v0", render_mode='rgb_array')
+    env = RecordVideo(env, video_folder=r"C:\Users\asus\Documents\GitHub\HighwayEnvReal\models\model_simple_track", episode_trigger=lambda e: True)
     env.unwrapped.set_record_video_wrapper(env)
 
     for video in range(10):
