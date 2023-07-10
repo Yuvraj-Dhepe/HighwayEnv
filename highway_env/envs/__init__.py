@@ -12,6 +12,7 @@ from highway_env.envs.cust_env_m import *
 from highway_env.envs.simple_env import *
 from highway_env.envs.cust_env_y import *
 from gymnasium.envs.registration import register
+from highway_env.envs.basic_env import *
 
 register(
     id='rt-m-v0',
@@ -26,4 +27,9 @@ register(
 register(
     id='rt-simple-v0',
     entry_point='highway_env.envs:SimpleEnv'
+)
+
+register(
+    id='rt-ell-v0',
+    entry_point='highway_env.envs:EllipseEnv'
 )
