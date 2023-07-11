@@ -1,7 +1,7 @@
 import gymnasium as gym
 from gymnasium.wrappers import RecordVideo
 from stable_baselines3 import DQN
-
+from highway_env.envs.simple_env import *
 import highway_env
 
 
@@ -9,7 +9,7 @@ TRAIN = True
 
 if __name__ == '__main__':
     # Create the environment
-    env = gym.make("rt-ell-v0",render_mode="rgb-array")
+    env = gym.make("rt-simple-v0")#,render_mode = 'human')
     obs, info = env.reset()
 
     # Create the model
@@ -24,19 +24,19 @@ if __name__ == '__main__':
                 gradient_steps=1,
                 target_update_interval=50,
                 verbose=1,
-                tensorboard_log="./y_models/logs")
+                tensorboard_log="./y_models/logs/cnn_dqn")
 
     # Train the model
     if TRAIN:
         model.learn(total_timesteps=int(1e5))
-        model.save("./y_models/dqn/")
+        model.save("./y_models/cnn_dqn/")
         del model
 
     # Run the trained model and record video
-    # model = DQN.load("highway_dqn/model", env=env)
-    # env = RecordVideo(env, video_folder="highway_dqn/videos", episode_trigger=lambda e: True)
+    # model = DQN.load("./y_models/dqn.zip", env=env)
+    # env = RecordVideo(env, video_folder="./y_models/vids", episode_trigger=lambda e: True)
     # env.unwrapped.set_record_video_wrapper(env)
-    # env.configure({"simulation_frequency": 15})  # Higher FPS for rendering
+    # env.configure({"simulation_frequency": 30})  # Higher FPS for rendering
 
     # for videos in range(10):
     #     done = truncated = False

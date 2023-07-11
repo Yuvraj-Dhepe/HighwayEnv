@@ -14,10 +14,11 @@ from typing import Dict, Text
 import gymnasium as gym
 from highway_env.envs.cust_env_y import *
 from highway_env.envs.cust_env_m import *
+from highway_env.envs.simple_env import *
 import matplotlib.pyplot as plt
 
 
-env = gym.make("rt-ell-v0",render_mode = "human")
+env = gym.make("rt-simple-v0",render_mode = "human")
 obs, info = env.reset()
 # print(env.action_space)
 
