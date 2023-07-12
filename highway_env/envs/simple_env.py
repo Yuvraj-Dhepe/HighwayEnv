@@ -26,14 +26,37 @@ class SimpleEnv(AbstractEnv):
     def default_config(cls) -> dict:
         config = super().default_config()
         config.update({
-            "observation": {
-           "type": "GrayscaleObservation",
-           "observation_shape": (128, 64),
-           "stack_size": 4,
-           "weights": [0.2989, 0.5870, 0.1140],  # weights for RGB conversion
-           "scaling": 1.75,
-       },
-           "policy_frequency": 2,
+   #          "observation": {
+   #         "type": "GrayscaleObservation",
+   #         "observation_shape": (128, 64),
+   #         "stack_size": 4,
+   #         "weights": [0.2989, 0.5870, 0.1140],  # weights for RGB conversion
+   #         "scaling": 1.75,
+   #     },
+   #     "policy_frequency": 2
+   # },
+            
+                "observation": {
+        "type": "Kinematics",
+        "vehicles_count": 3,
+        "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
+        "features_range": {
+            "x": [-100, 100],
+            "y": [-100, 100],
+            "vx": [-20, 20],
+            "vy": [-20, 20]
+        },
+        "absolute":False,
+        "order":"sorted"
+        },
+            # "observation": {
+            #     "type": "Kinematic",
+            #     "features": ['presence', 'on_road'],
+            #     "grid_size": [[-18, 18], [-18, 18]],
+            #     "grid_step": [3, 3],
+            #     "as_image": False,
+            #     "align_to_vehicle_axes": True
+            # },
             "action": {
                 "type": "DiscreteAction",
                 "longitudinal": False,

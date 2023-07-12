@@ -8,11 +8,11 @@ import highway_env
 TRAIN = True
 
 if __name__ == '__main__':
-    # Create the environment
-    env = gym.make("rt-simple-v0")#,render_mode = 'human')
+    # # Create the environment
+    env = gym.make("rt-simple-v0",render_mode = 'human')
     obs, info = env.reset()
 
-    # Create the model
+    # # Create the model
     model = DQN('MlpPolicy', env,
                 policy_kwargs=dict(net_arch=[256, 256]),
                 learning_rate=5e-4,
@@ -33,19 +33,19 @@ if __name__ == '__main__':
         del model
 
     # Run the trained model and record video
-    # model = DQN.load("./y_models/dqn.zip", env=env)
-    # env = RecordVideo(env, video_folder="./y_models/vids", episode_trigger=lambda e: True)
-    # env.unwrapped.set_record_video_wrapper(env)
-    # env.configure({"simulation_frequency": 30})  # Higher FPS for rendering
+    model = DQN.load("./y_models/cnn_dqn.zip", env=env)
+    env = RecordVideo(env, video_folder="./y_models/vids", episode_trigger=lambda e: True)
+    env.unwrapped.set_record_video_wrapper(env)
+    env.configure({"simulation_frequency": 30})  # Higher FPS for rendering
 
-    # for videos in range(10):
-    #     done = truncated = False
-    #     obs, info = env.reset()
-    #     while not (done or truncated):
-    #         # Predict
-    #         action, _states = model.predict(obs, deterministic=True)
-    #         # Get reward
-    #         obs, reward, done, truncated, info = env.step(action)
-    #         # Render
-    #         env.render()
+    for videos in range(10):
+        done = truncated = False
+        obs, info = env.reset()
+        while not (done or truncated):
+            # Predict
+            action, _states = model.predict(obs, deterministic=True)
+            # Get reward
+            obs, reward, done, truncated, info = env.step(action)
+            # Render
+            env.render()
     env.close()
