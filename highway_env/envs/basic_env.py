@@ -27,18 +27,28 @@ class EllipseEnv(AbstractEnv):
     def default_config(cls) -> dict:
         config = super().default_config()
         config.update({
-            "observation": {
+            """ "observation": {
                 "type": "OccupancyGrid",
-                "features": ['presence', 'on_road'],
+                "features":  ['presence', 'on_road'],
                 "grid_size": [[-18, 18], [-18, 18]],
                 "grid_step": [3, 3],
                 "as_image": False,
                 "align_to_vehicle_axes": True
+            }, """
+            "observation":{ 
+                "type": "Kinematics",
+                #"vehicles_count": 15,
+                "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
+                "features_range": {
+                    "x": [-100, 200],
+                    "y": [-100, 200],
+                    "vx": [-20, 20],
+                    "vy": [-20, 20]}
             },
             "action": {
-                "type": "DiscreteAction",
-                "longitudinal": False,
-                "lateral": True,
+                "type": "ContinuousAction",
+                "longitudinal": False,  #control of throttle
+                "lateral": True,  #control of steering
                 "target_speeds": [0, 5, 10]
             },
             "simulation_frequency": 15,
@@ -65,11 +75,22 @@ class EllipseEnv(AbstractEnv):
 
     def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
         _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
+        #editing the reward function for "on_road_reward":
+        closest_lane_index=self.road.network.get_closest_lane_index(self.vehicle.position)
+        closest_lane=self.road.network.get_lane(closest_lane_index)
+        distance_lv=closest_lane.distance(self.vehicle.position)
+        on_road_rew=0
+        if(distance_lv==0):
+            on_road_rew=1 #so that the reward will be 1
+        else:
+            on_road_rew=-distance_lv/100
+        print(distance_lv, on_road_rew)
         return {
             "lane_centering_reward": 1/(1+self.config["lane_centering_cost"]*lateral**2),
             "action_reward": np.linalg.norm(action),
-            "collision_reward": self.vehicle.crashed,
-            "on_road_reward": self.vehicle.on_road,
+            "collision_reward": float(self.vehicle.crashed),
+            "on_road_reward": on_road_rew
+           #"on_road_reward": float(self.vehicle.on_road),  #To use kinematics I could try to edit this using the distance of the vehicle from the closest lane
         }
 
     def _is_terminated(self) -> bool:
@@ -151,7 +172,7 @@ class EllipseEnv(AbstractEnv):
         """
         rng = np.random.default_rng()
 
-        # Controlled vehicles
+        # Controlled vehicles  (ego vehicle)
         self.controlled_vehicles = []
         for i in range(self.config["controlled_vehicles"]):
             lane_index = ("a", "b", rng.integers(2)) if i == 0 else \
@@ -187,16 +208,20 @@ class EllipseEnv(AbstractEnv):
                     break
             else:
                 self.road.vehicles.append(vehicle)
-        random_lane_index2 = list(self.road.network.random_lane_index(rng))
+        """random_lane_index2 = list(self.road.network.random_lane_index(rng))
         random_lane_index2[-1]= lane_index[-1]
         random_lane_index2=tuple(random_lane_index2)
         lane=self.road.network.get_lane(random_lane_index2)
         obst = Obstacle(self.road, lane.position(longitudinal=rng.uniform(low=0,high=lane.length),lateral=0.5))
-        self.road.objects.append(obst)
+        obst.LENGTH, obst.WIDTH = (3, 3)
+        obst.diagonal = np.sqrt(obst.LENGTH**2 + obst.WIDTH**2)
+        self.road.objects.append(obst) """
         #SECOND OBSTACLE:
         random_lane_index3 = list(self.road.network.random_lane_index(rng))
         random_lane_index3[-1]= lane_index[-1]
         random_lane_index3=tuple(random_lane_index3)
         lane=self.road.network.get_lane(random_lane_index3)
-        obst2 = Obstacle(self.road, lane.position(longitudinal=rng.uniform(low=0,high=lane.length),lateral=0.5))
-        self.road.objects.append(obst2)
+        obst2 = Obstacle(self.road, lane.position(longitudinal=rng.uniform(low=0,high=lane.length),lateral=0.5), heading=np.pi / 2)
+        obst2.LENGTH, obst2.WIDTH = (3, 3)
+        obst2.diagonal = np.sqrt(obst2.LENGTH**2 + obst2.WIDTH**2)
+        self.road.objects.append(obst2) 
