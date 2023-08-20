@@ -50,7 +50,7 @@ class SimpleEnv(AbstractEnv):
         "order":"sorted"
         },
             # "observation": {
-            #     "type": "Kinematic",
+            #     "type": "OccupancyGrid",
             #     "features": ['presence', 'on_road'],
             #     "grid_size": [[-18, 18], [-18, 18]],
             #     "grid_step": [3, 3],
