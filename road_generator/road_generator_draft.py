@@ -1,3 +1,6 @@
+import math
+import random
+
 import numpy as np
 
 
@@ -13,6 +16,9 @@ class Coordinate:
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
+
+    def __str__(self):
+        return f"x: {self.x}, y: {self.y}"
 
 
 class Direction(Coordinate):
@@ -36,7 +42,55 @@ class Direction(Coordinate):
         self.y = y if y is not None else self.y
 
 
+class Randomizer:
+    """
+        Chose random actions based on the given
+    """
+
+    def __init__(self):
+        self.seed = 6969
+        np.random.seed(self.seed)
+        self.p_straight: float = 0.5
+        self.p_turn: float = 0.5
+
+        assert self.p_turn + self.p_straight == 1
+
+    def update_probabilities(self, new_p_straight: float):
+        """
+        During the process of randomizing tracks, the probabilities of straights and turns will differ depending on
+        whether the last piece was a straight or a turn
+        :param new_p_straight:
+        """
+        self.p_straight = new_p_straight
+        self.p_turn = 1 - new_p_straight
+
+    def get_random_action(self) -> int:
+        """
+        Make a bernoulli experiment Ber(self.straight). If the outcome is 1, then a straight line as next action is
+        chosen and when its 0 a turn is chosen
+        :return: 1 = next action is a straight line 0 = next action is a turn
+        """
+        choice: int = np.random.choice([0, 1], p=[self.p_turn, self.p_straight])
+
+        # adjust probabilities
+        new_p_straight = self.p_straight - 0.1 if choice else self.p_straight + 0.1
+        self.update_probabilities(new_p_straight=new_p_straight)
+
+        return choice
+
+    def get_random_turn(self, p: list[float]) -> int:
+        """
+        get a random turn based on p
+        :param p: a list of probabilities for the different choices
+        """
+        return np.random.choice([1, -1], p=p)
+
+
 class RoadGenerator:
+    """
+        The main class of the road generator
+    """
+
     def __init__(self, size: int):
         """
         Constructor
@@ -59,6 +113,7 @@ class RoadGenerator:
         # since the start is in the top left corner we start with going towards the right
         # for y coordinate 1 is up and - is down
         self.current_direction: Direction = Direction(x=1, y=0)
+        self.preferred_direction: Direction = Direction(x=1, y=0)
 
         # define the corners of the field
         self._top_l: Coordinate = Coordinate(0, 0)
@@ -68,35 +123,64 @@ class RoadGenerator:
 
         self.corners: list = [self._top_l, self._top_r, self._bottom_l, self._bottom_r]
 
+        # define the quadrant borders
+        center: int = int(size / 2)
+        self.horizontal_border: list[Coordinate] = [Coordinate(x=i, y=center) for i in range(size)]
+        self.vertical_border: list[Coordinate] = [Coordinate(x=center, y=i) for i in range(size)]
+
+        # the active border is the one that is used when checking whether the road is close to crash
+        self.active_border = self.horizontal_border
+
+        # make general borders
+        self.top_border: list[Coordinate] = [Coordinate(x=i, y=0) for i in range(self.space_size)]
+        self.left_border: list[Coordinate] = [Coordinate(x=0, y=i) for i in range(self.space_size)]
+        self.right_border: list[Coordinate] = [Coordinate(x=self.space_size, y=i) for i in range(self.space_size)]
+        self.bottom_border: list[Coordinate] = [Coordinate(x=i, y=self.space_size) for i in range(self.space_size)]
+        self.space_border: list[Coordinate] = self.top_border + self.right_border + self.left_border + self.bottom_border
+
+        # instantiate the random generator
+        self.random_step: Randomizer = Randomizer()
+
         self.counter: int = 2
 
-    def create_map(self, steps: int):
+    def create_map(self):
         """
         create a map with n steps
-        :param steps:
         :return:
         """
         # as a first step make a straight line
         self.update_space()
-        for _ in range(steps):
+        # get the distance to the right wall
+        max_dist: int = int(math.fabs(self.current_position.x - self.space_size))
+
+        # compute the random number of steps to go towards that direction
+        steps: range = range(random.randint(max_dist, max_dist + 5))
+        for _step in steps:
+            print(self.current_position)
             self.step()
 
     def step(self):
         """
         Perform one forward step and insert a new piece
         """
-        if self.is_corner_ahead():
-            self.current_direction.update_position()
-        elif self.is_border_ahead():
-            new_direction: Direction = self.make_turn(random_direction=False)
-            self.current_direction.update_position(x=new_direction.x, y=new_direction.y)
+        free_direction: bool = True
+
+        # check the current set of actions
+        if self.is_border_ahead():
+            print("border ahead")
+            action: int = 0  # action for turn
+            free_direction = False  # since we are forced to take a turn in a specific direction
+
         else:
-            # everything normal do a forward step
-            pass
+            action: int = self.random_step.get_random_action()
 
-        self.update_space()
-
-        # generate random action
+        # perform action
+        if action == 1:
+            # add a straight
+            self.add_straight_line()
+        else:
+            # add a curve
+            self.add_curve(free_direction=free_direction)
 
     def update_space(self):
         """
@@ -107,14 +191,22 @@ class RoadGenerator:
         self.space[self.current_position.y][self.current_position.x] = self.counter
         self.counter += 1
 
+    def switch_active_border(self):
+        """
+            Switch the current border from vertical to horizontal or vice versa
+        """
+        self.active_border = self.horizontal_border if self.active_border == self.vertical_border else self.vertical_border
+
     def is_border_ahead(self) -> bool:
         """
         Check whether the next step in the current direction will crash with the border or not.
         The border is the end of the space that is either 0 or self.size
         :return:
         """
-        next_position: Coordinate = self.current_direction + self.current_position
-        return next_position.x in [0, self.space_size] or next_position.y in [0, self.space_size]
+        next_position: Coordinate = self.current_direction + self.current_direction + self.current_position
+        if next_position.x == 0 or next_position.y == 0:
+            a = 1
+        return next_position in self.space_border or next_position in self.active_border
 
     def is_corner_ahead(self) -> bool:
         """
@@ -123,6 +215,36 @@ class RoadGenerator:
         """
         next_position: Coordinate = self.current_direction + self.current_position
         return next_position in self.corners
+
+    def add_straight_line(self):
+        """
+        Add a straight line in the current direction to the space.
+        Currently this function only applies a space update but later on it will construct the whole straight lane
+        """
+        self.update_space()
+
+    def add_curve(self, free_direction: bool):
+        """
+        Make a turn. Currently only 90 degree turns are supported. This means, we go one step forward and one step
+        towards the direction of the curve.
+        Since in the racetrack env, a 90 degree curve modifies the x and y coordinate, a curve will be displayed as one
+        step forward and the one step in the direction of the curve.
+        :return:
+        """
+
+        if free_direction:
+            # determine_position if we move in x direction we chose upwards or downwards turn
+            # if we move in y direction we chose left or right turn
+            turn_direction: int = self.random_step.get_random_turn(p=[.5, .5])
+            self.update_space()
+            if np.abs(self.current_direction.x) == 1:
+                # we move in x direction
+                self.current_direction.update_position(x=0, y=turn_direction)
+        else:
+            self.update_space()
+            self.current_direction.update_position(x=self.preferred_direction.x, y=self.preferred_direction.y)
+
+        self.update_space()
 
     def make_turn(self, random_direction: bool = True, random_degree: bool = True, degree: int = 90) -> Direction:
         """
@@ -163,8 +285,24 @@ class RoadGenerator:
                     # we are on the left side of the space -> turn right
                     return Direction(x=1, y=0)
 
+    def draw_active_border(self):
+        """
+            draw the current active border
+        """
+        for coordinate in self.active_border:
+            self.space[coordinate.y][coordinate.x] = -1
+
+    def draw_space_border(self):
+        """
+            Draw the space borders
+        """
+        for coordinate in self.space_border:
+            self.space[coordinate.y][coordinate.x] = -1
+
 
 if __name__ == "__main__":
-    r = RoadGenerator(10)
-    r.create_map(25)
+    r = RoadGenerator(17)
+    r.draw_active_border()
+    r.draw_space_border()
+    r.create_map()
     print(r.space)
