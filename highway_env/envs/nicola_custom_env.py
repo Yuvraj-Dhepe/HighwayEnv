@@ -65,6 +65,7 @@ class CustomRoadEnv(AbstractEnv):
 
     def _rewards(self, action: np.ndarray):
         _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
+        speed = self.vehicle.speed
         return {
             "lane_centering_reward": 1 / (1 + self.config["lane_centering_cost"] * lateral ** 2),
             "action_reward": self.config["action_reward"],
