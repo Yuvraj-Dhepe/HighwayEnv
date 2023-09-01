@@ -18,9 +18,20 @@ from highway_env.envs.simple_env import *
 import matplotlib.pyplot as plt
 
 
-env = gym.make("rt-simple-v0",render_mode = "human")
+env = gym.make("racetrack-v0",render_mode = "human")
+# Rest settings for race-track are not changed, accept longitudinal = True, and Discrete Action being used
+env.configure({
+    "manual_control": True
+})
 obs, info = env.reset()
-# print(env.action_space)
+done = False
+print(env.action_space.sample())
+while not done:
+    ac = int(input())
+    # print(env.get_available_actions())
+    # ac = env.action_space.sample()
+    env.step(ac)
 
-for i in range(1000):
-    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+# print(env.action_space)
+# for i in range(1000):
+#     obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
