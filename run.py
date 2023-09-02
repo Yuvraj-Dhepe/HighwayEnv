@@ -16,21 +16,29 @@ from highway_env.envs.cust_env_y import *
 from highway_env.envs.cust_env_m import *
 from highway_env.envs.simple_env import *
 import matplotlib.pyplot as plt
+from stable_baselines3.common.vec_env import *
+from stable_baselines3.common.env_util import make_vec_env 
+import os
+import multiprocessing
 
 
-env = gym.make("racetrack-v0",render_mode = "human")
+n_cpu = os.cpu_count()
+
+
+env = gym.make("rt-y-v0",render_mode = "human")
+# env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 7113)
 # Rest settings for race-track are not changed, accept longitudinal = True, and Discrete Action being used
-env.configure({
-    "manual_control": True
-})
+
 obs, info = env.reset()
 done = False
 print(env.action_space.sample())
 while not done:
-    ac = int(input())
     # print(env.get_available_actions())
-    # ac = env.action_space.sample()
+    ac = env.action_space.sample()
+    # ac = int(input())
     env.step(ac)
+    env.return_speed_and_velocity()
+    
 
 # print(env.action_space)
 # for i in range(1000):

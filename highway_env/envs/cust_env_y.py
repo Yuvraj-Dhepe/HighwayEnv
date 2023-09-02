@@ -11,34 +11,30 @@ from highway_env.vehicle.behavior import IDMVehicle
 
 
 class CustEnvY(AbstractEnv):
-    """
-    A continuous control environment.
-
-    The agent needs to learn two skills:
-    - follow the tracks
-    - avoid collisions with other vehicles
-
-    Credits and many thanks to @supperted825 for the idea and initial implementation.
-    See https://github.com/eleurent/highway-env/issues/231
-    """
-
     @classmethod
     def default_config(cls) -> dict:
         config = super().default_config()
         config.update({
             "observation": {
                 "type": "OccupancyGrid",
-                "features": ['presence', 'on_road'],
-                "grid_size": [[-18, 18], [-18, 18]],
+                "features": ["presence", 'on_road','x','y','vx','vy','cos_h','sin_h'],
+                "features_range": {
+                    "x": [-100, 100],
+                    "y": [-100, 100],
+                    "vx": [-20, 20],
+                    "vy": [-20, 20]
+                },
+                "grid_size": [[-30, 30], [-30, 30]],
                 "grid_step": [3, 3],
                 "as_image": False,
                 "align_to_vehicle_axes": True
             },
             "action": {
-                "type": "ContinuousAction",
-                "longitudinal": False,
+                "type": "DiscreteAction",
+                "longitudinal": True,
                 "lateral": True,
-                "target_speeds": [0, 5, 10]
+                "speed_range": [0, 30],
+                # "target_speeds": [0, 8] # Only used in DiscreteMetaAction
             },
             "simulation_frequency": 15,
             "policy_frequency": 5,
@@ -47,11 +43,13 @@ class CustEnvY(AbstractEnv):
             "lane_centering_cost": 4,
             "lane_centering_reward": 1,
             "action_reward": -0.3,
+            "on_road_reward": 1,
             "controlled_vehicles": 1,
-            "other_vehicles": 1,
-            "screen_width": 900,
+            "other_vehicles": 10,
+            "screen_width": 600,
             "screen_height": 600,
-            "centering_position": [0.6, 0.92],
+            "centering_position": [0.5, 0.5],
+            "neg_acceleration_reward": -10
         })
         return config
 
@@ -69,7 +67,33 @@ class CustEnvY(AbstractEnv):
             "action_reward": np.linalg.norm(action),
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
+            "neg_acceleration_reward": self.config["neg_acceleration_reward"] if self.vehicle.speed < 0 else 0,
+            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -10*self.config["on_road_reward"],
+            "alive_reward": self.time / self.config["duration"]
         }
+    def return_speed_and_velocity(self):
+        print(self.vehicle.speed, self.vehicle.velocity)
+    
+    # def _reward(self, action: np.ndarray) -> float:
+    #     rewards = self._rewards(action)
+    #     reward = sum(reward for name, reward in rewards.items())
+    #     return reward
+
+    # def _rewards(self, action: np.ndarray):
+    #     _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
+    #     speed = self.vehicle.speed
+    #     return {
+    #         "lane_centering_reward": 1 / (1 + self.config["lane_centering_cost"] * lateral ** 2),
+    #         "action_reward": self.config["action_reward"],
+    #         # custom collision reward
+    #         "collision_reward": self.config["collision_reward"] if self.vehicle.crashed else 0,
+    #         # custom on road reward and negative reward for getting of the lane
+    #         "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -10*self.config["on_road_reward"],
+    #         # custom alive reward that increases over time to give the model incentives to live longer
+    #         "alive_reward": self.time / self.config["duration"],
+    #         # custom negative reward for negative acceleration
+    #         "neg_acceleration_reward": self.config["neg_acceleration_reward"] if self.vehicle.speed < 0 else 0
+    #     }    
 
     def _is_terminated(self) -> bool:
         return self.vehicle.crashed
@@ -182,10 +206,10 @@ class CustEnvY(AbstractEnv):
                 self.road.network.random_lane_index(rng)
             controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index, speed=None,
                                                                              longitudinal=rng.uniform(20, 50))
-
+            # controlled_vehicle.MIN_SPEED = 0
             self.controlled_vehicles.append(controlled_vehicle)
             self.road.vehicles.append(controlled_vehicle)
-
+            
         # Front vehicle
         vehicle = IDMVehicle.make_on_lane(self.road, ("b", "c", lane_index[-1]),
                                           longitudinal=rng.uniform(
@@ -204,7 +228,7 @@ class CustEnvY(AbstractEnv):
                                                   high=self.road.network.get_lane(random_lane_index).length
                                               ),
                                               speed=6+rng.uniform(high=3))
-            vehicle.randomize()
+            # vehicle.randomize()
             # Prevent early collisions
             for v in self.road.vehicles:
                 if np.linalg.norm(vehicle.position - v.position) < 20:
