@@ -6,6 +6,7 @@ from highway_env.envs.common.abstract import AbstractEnv
 from highway_env.road.road import RoadNetwork, Road
 from highway_env.road.lane import StraightLane, CircularLane, SineLane, LineType
 import numpy as np
+from highway_env.vehicle.kinematics import Vehicle
 
 from highway_env.vehicle.behavior import IDMVehicle
 
@@ -37,19 +38,21 @@ class CustomRoadEnv(AbstractEnv):
                 "align_to_vehicle_axes": True
             },
             "action": {
-                "type": "DiscreteAction",
-                "longitudinal": False,
+                "type": "DiscreteMetaAction",
+                "longitudinal": True,
                 "lateral": True,
-                "target_speeds": [0, 8]
+                "target_speeds": [0, 10]
             },
-            "simulation_frequency": 15,
+            "simulation_frequency": 5,
             "policy_frequency": 5,
             "duration": 300,
             "collision_reward": -100,
             "lane_centering_cost": 4,
             "lane_centering_reward": 1,
-            "action_reward": -0.01,
+            "action_reward": -0.05,
             "on_road_reward": 1,
+            "off_road_cost": -3,
+            "backwards_driving_reward": -3,
             "controlled_vehicles": 1,
             "other_vehicles": 10,
             "screen_width": 600,
@@ -61,20 +64,26 @@ class CustomRoadEnv(AbstractEnv):
     def _reward(self, action: np.ndarray) -> float:
         rewards = self._rewards(action)
         reward = sum(reward for name, reward in rewards.items())
-        return reward
+
+        speed_factor = 1
+        if self.vehicle.on_road:
+            speed_factor = self.vehicle.speed / 25
+
+        return reward * speed_factor
 
     def _rewards(self, action: np.ndarray):
         _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
-        speed = self.vehicle.speed
         return {
             "lane_centering_reward": 1 / (1 + self.config["lane_centering_cost"] * lateral ** 2),
-            "action_reward": self.config["action_reward"],
+            "action_reward": self.config["action_reward"] * np.linalg.norm(action),
             # custom collision reward
             "collision_reward": self.config["collision_reward"] if self.vehicle.crashed else 0,
             # custom on road reward and negative reward for getting of the lane
-            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -10*self.config["on_road_reward"],
+            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else self.config["off_road_cost"],
             # custom alive reward that increases over time to give the model incentives to live longer
-            "alive_reward": self.time / self.config["duration"]
+            # "alive_reward": self.time / self.config["duration"] * 2,
+            # reward the car for going forward
+            "speed_reward": self.config["backwards_driving_reward"] if self.vehicle.speed < 0 else (self.vehicle.speed / self.config["action"]["target_speeds"][-1])
         }
 
     def _is_terminated(self) -> bool:
@@ -196,37 +205,42 @@ class CustomRoadEnv(AbstractEnv):
         """
         Populate a road with several vehicles on the highway and on the merging lane, as well as an ego-vehicle.
         """
-        rng = np.random.default_rng(12345)
+
+        rng = np.random.default_rng(np.random.randint(1, 1000))
 
         # Controlled vehicles
         self.controlled_vehicles = []
         for i in range(self.config["controlled_vehicles"]):
-            lane_index = ("a", "b", rng.integers(2)) if i == 0 else \
-                self.road.network.random_lane_index(rng)
-            controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index, speed=12,
-                                                                             longitudinal=rng.uniform(20, 50))
+            lane_index = ("a", "b", rng.integers(2)) if i == 0 else self.road.network.random_lane_index(rng)
+            vehicle = Vehicle.create_random(
+                self.road,
+                speed=25,
+                lane_id=0,
+                lane_from="a",
+                lane_to="b"
+            )
+            controlled_vehicle = self.action_type.vehicle_class(self.road, vehicle.position, vehicle.heading, vehicle.speed)
+
+            """controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index,
+                                                                             speed=0,
+                                                                             longitudinal=rng.uniform(20, 50)
+                                                                             )"""
+            # avoid going negative speeds
+            controlled_vehicle.MIN_SPEED = 0
+            controlled_vehicle.MAX_SPEED = 12
 
             self.controlled_vehicles.append(controlled_vehicle)
             self.road.vehicles.append(controlled_vehicle)
 
-        # Front vehicle
-        vehicle = IDMVehicle.make_on_lane(self.road, ("b", "c", lane_index[-1]),
-                                          longitudinal=rng.uniform(
-                                              low=0,
-                                              high=self.road.network.get_lane(("b", "c", 0)).length
-                                          ),
-                                          speed=0 + rng.uniform(high=3))
-        self.road.vehicles.append(vehicle)
-
         # Other vehicles
         for i in range(self.config["other_vehicles"]):
-            random_lane_index = self.road.network.random_lane_index(np.random)
+            random_lane_index = self.road.network.random_lane_index(rng)
             vehicle = IDMVehicle.make_on_lane(self.road, random_lane_index,
                                               longitudinal=rng.uniform(
                                                   low=0,
                                                   high=self.road.network.get_lane(random_lane_index).length
                                               ),
-                                              speed= 3 + rng.uniform(high=3))
+                                              speed=3 + rng.uniform(high=3))
             # Prevent early collisions
             for v in self.road.vehicles:
                 if np.linalg.norm(vehicle.position - v.position) < 20:

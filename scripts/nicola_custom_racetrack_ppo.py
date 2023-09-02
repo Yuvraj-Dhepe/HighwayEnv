@@ -1,21 +1,20 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium.wrappers import RecordVideo
-from stable_baselines3 import DQN, DDPG, PPO
+from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.vec_env import SubprocVecEnv
-import highway_env.envs.racetrack_env
-
-import highway_env
+import highway_env.envs.nicola_custom_env
 
 
 TRAIN = False
 
 if __name__ == '__main__':
-    n_cpu = 6
+    n_cpu = 12
     batch_size = 128
-    env = gym.make("nicola_custom_env-v0")
+    env = make_vec_env("nicola_custom_env", n_envs=n_cpu, vec_env_cls=SubprocVecEnv, seed=7113)
+    #env = gym.make("nicola_custom_env")
     model = PPO("MlpPolicy",
                 env,
                 policy_kwargs=dict(net_arch=[dict(pi=[256, 256], vf=[256, 256])]),
@@ -25,18 +24,18 @@ if __name__ == '__main__':
                 learning_rate=4e-4,
                 gamma=0.9,
                 verbose=2,
-                tensorboard_log=r"/Users/I518095/Documents/GitHub/HighwayEnv/tensorboard")
+                tensorboard_log=r"D:\Documents\GitHub\HighwayEnvGroup\tensorboard")
     # Train the model
     if TRAIN:
-        model.learn(total_timesteps=int(2.5e4))
-        model.save(r"/Users/I518095/Documents/GitHub/HighwayEnv/Models/model_v4")
+        model.learn(total_timesteps=int(25e4))
+        model.save(r"D:\Documents\GitHub\HighwayEnvGroup/Models/model_v1")
         del model
 
     # Run the algorithm
-    model = PPO.load("/Users/I518095/Documents/GitHub/HighwayEnv/Models/model_v1", env=env)
+    model = PPO.load(r"D:\Documents\GitHub\HighwayEnvGroup/models/model_v1", env=env)
 
-    env = gym.make("nicola_custom_env-v0", render_mode="human")
-    env = RecordVideo(env, video_folder="/Users/I518095/Documents/GitHub/HighwayEnv/Videos", episode_trigger=lambda e: True)
+    env = gym.make("nicola_custom_env", render_mode="rgb_array")
+    env = RecordVideo(env, video_folder="D:\Documents\GitHub\HighwayEnvGroup/videos", episode_trigger=lambda e: True)
     env.unwrapped.set_record_video_wrapper(env)
 
     for video in range(10):
@@ -47,8 +46,8 @@ if __name__ == '__main__':
             action, _states = model.predict(obs, deterministic=True)
             # Get reward
             obs, reward, done, truncated, info = env.step(action)
+            print(reward)
             # Render
             env.render()
 
     env.close()
-å

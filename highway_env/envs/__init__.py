@@ -36,6 +36,6 @@ register(
 )
 
 register(
-    id='nicola_racetrack_v2',
+    id='nicola_custom_env',
     entry_point='highway_env.envs:CustomRoadEnv'
 )
