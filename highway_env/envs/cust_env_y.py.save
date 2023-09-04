@@ -72,25 +72,11 @@ class CustEnvY(AbstractEnv):
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
             "neg_acceleration_reward": -10 if self.vehicle.speed < 0 else 3,
-            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else \
--100*self.config["on_road_reward"],
+            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -10*self.config["on_road_reward"],
             # "alive_reward": self.time / self.config["duration"]
         }
     def return_speed_and_velocity(self):
         print(self.vehicle.speed, self.vehicle.velocity)
-        
-    def return_vehicle_index(self):
-        single_nodes = ["a", "b", "c", "d", "e", "f", "g", "h"]
-        
-        shifted_nodes = single_nodes[1:]
-        shifted_nodes += single_nodes[0]
-        nodes =  [(node, next_node) for node, next_node in zip(single_nodes, shifted_nodes)]
-        node_list =  {nodes[i-1]:nodes[i] for i in range(1,len(nodes))}
-        node_list.update({nodes[-1]:nodes[0]})
-        current_lane = (self.vehicle.lane_index[0],self.vehicle.lane_index[1])
-        next_lane = node_list[current_lane]
-        print(f"Current_Lane: {current_lane}, Next_Lane:{next_lane}")
-        
     
     # def _reward(self, action: np.ndarray) -> float:
     #     rewards = self._rewards(action)

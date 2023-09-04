@@ -230,8 +230,9 @@ class AbstractEnv(gym.Env):
         """
         if self.road is None or self.vehicle is None:
             raise NotImplementedError("The road and vehicle must be initialized in the environment implementation")
-
+        # dt = 1 / self.config["policy_frequency"]
         self.time += 1 / self.config["policy_frequency"]
+        print(f"Time:{dt}")
         self._simulate(action)
 
         obs = self.observation_type.observe()
@@ -239,6 +240,8 @@ class AbstractEnv(gym.Env):
         terminated = self._is_terminated()
         truncated = self._is_truncated()
         info = self._info(obs, action)
+        # print(f"Speed: {self.return_speed_and_velocity()}")
+        print(f"Current_Vehicle_Lane: {self.return_vehicle_index()}")
         if self.render_mode == 'human':
             self.render()
 

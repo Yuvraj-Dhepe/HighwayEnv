@@ -1,5 +1,5 @@
 import numpy as np
-
+from stable_baselines3 import DQN
 # from highway_env import utils
 # from highway_env.envs.common.abstract import AbstractEnv
 # from highway_env.envs.common.action import Action
@@ -21,24 +21,30 @@ from stable_baselines3.common.env_util import make_vec_env
 import os
 import multiprocessing
 
-
+LOAD = True
 n_cpu = os.cpu_count()
 
 
 env = gym.make("rt-y-v0",render_mode = "human")
-# env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 7113)
-# Rest settings for race-track are not changed, accept longitudinal = True, and Discrete Action being used
-
 obs, info = env.reset()
 done = False
-print(env.action_space.sample())
-while not done:
-    # print(env.get_available_actions())
-    ac = env.action_space.sample()
-    # ac = int(input())
-    env.step(ac)
-    env.return_speed_and_velocity()
-    
+# env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 7113)
+# Rest settings for race-track are not changed, accept longitudinal = True, and Discrete Action being used
+if LOAD == False:
+	#print(env.action_space.sample())
+	while not done:
+		# print(env.get_available_actions())
+		ac = env.action_space.sample()
+		# ac = int(input())
+		# env.step(ac)
+		env.return_speed_and_velocity()
+else:
+	#obs, info = env.reset()
+	model = DQN.load("y_models/DQN_models/mlp_dqn1.zip", env = env)
+	while not done:
+		ac = env.action_space.sample()
+		env.step(ac)
+		# env.return_speed_and_velocity()
 
 # print(env.action_space)
 # for i in range(1000):

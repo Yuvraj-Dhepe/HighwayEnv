@@ -7,14 +7,14 @@ from stable_baselines3.common.vec_env import *
 from stable_baselines3.common.env_util import make_vec_env 
 import os
 
-n_cpu = 8
+n_cpu = os.cpu_count()
 
 TRAIN = True
 SAVE = False
 if __name__ == '__main__':
     # # Create the environment
-    #env = gym.make("rt-y-v0",render_mode = 'human')
-    env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 7113)
+    # env = gym.make("rt-y-v0",render_mode ='human')
+    env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 42)
     # make_vec_env("rt-y-v0", n_envs=n_cpu, vec_env_cls=SubprocVecEnv,seed = 7113)
     env.reset()
     
@@ -23,31 +23,31 @@ if __name__ == '__main__':
                 policy_kwargs=dict(net_arch=[256, 256]),
                 learning_rate=5e-4,
                 buffer_size=15000,
-                learning_starts=200,
-                batch_size=32,
-                gamma=0.8,
+                learning_starts=300,
+                batch_size=16,
+                gamma=0.6,
                 train_freq=1,
-                gradient_steps=1,
-                target_update_interval=50,
+                gradient_steps=-1,
+                target_update_interval=30,
                 verbose=1,
                 tensorboard_log="./y_models/logs/mlp_dqn")
 
     # Train the model
     if TRAIN:
-        model.learn(total_timesteps=int(2.5e4))
-        model.save("./y_models/DQN_models/")
+        model.learn(total_timesteps=int(1e5))
+        model.save("./y_models/DQN_models/mlp_dqn1")
         del model
 
     if SAVE: 
         # Run the trained model and record video
-        env = make_vec_env("rt-y-v0", n_envs=n_cpu, vec_env_cls=SubprocVecEnv,seed=7113)
+        # env = make_vec_env("rt-y-v0", n_envs=n_cpu, vec_env_cls=SubprocVecEnv,seed=7113)
         obs, info = env.reset()
-        model = DQN.load("./y_models/DQN_models/mlp_dqn.zip", env=env)
+        model = DQN.load("y_models/DQN_models/mlp_dqn1.zip", env=env)
         env = RecordVideo(env, video_folder="./y_models/vids", episode_trigger=lambda e: True)
         env.unwrapped.set_record_video_wrapper(env)
         env.configure({"simulation_frequency": 30})  # Higher FPS for rendering
         
-        for videos in range(10):
+        for videos in range(3):
             done = truncated = False
             obs, info = env.reset()
             while not (done or truncated):

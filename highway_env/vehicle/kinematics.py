@@ -22,11 +22,11 @@ class Vehicle(RoadObject):
     """ Vehicle length [m] """
     WIDTH = 2.0
     """ Vehicle width [m] """
-    DEFAULT_INITIAL_SPEEDS = [23, 25]
+    DEFAULT_INITIAL_SPEEDS = [10, 12]
     """ Range for random initial speeds [m/s] """
-    MAX_SPEED = 40.
+    MAX_SPEED = 15.
     """ Maximum reachable speed [m/s] """
-    MIN_SPEED = -40.
+    MIN_SPEED = -15.
     """ Minimum reachable speed [m/s] """
     HISTORY_SIZE = 30
     """ Length of the vehicle state history, for trajectory display"""
@@ -130,7 +130,8 @@ class Vehicle(RoadObject):
             self.crashed = True
             self.impact = None
         self.heading += self.speed * np.sin(beta) / (self.LENGTH / 2) * dt
-        self.speed += self.action['acceleration'] * dt
+        # print(f"dt: {dt}")
+        self.speed += self.action['acceleration'] * dt 
         self.on_state_update()
 
     def clip_actions(self) -> None:
@@ -141,8 +142,10 @@ class Vehicle(RoadObject):
         self.action['acceleration'] = float(self.action['acceleration'])
         if self.speed > self.MAX_SPEED:
             self.action['acceleration'] = min(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
+            # print(f"Dec Acceleration: {self.action['acceleration']}")
         elif self.speed < self.MIN_SPEED:
             self.action['acceleration'] = max(self.action['acceleration'], 1.0 * (self.MIN_SPEED - self.speed))
+            # print(f"Inc Acceleration: {self.action['acceleration']}")
 
     def on_state_update(self) -> None:
         if self.road:
