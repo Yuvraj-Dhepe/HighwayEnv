@@ -53,7 +53,8 @@ class CustEnvY(AbstractEnv):
             "lane_centering_cost": 4,
             "lane_centering_reward": 1,
             "action_reward": -0.3,
-            "neg_acceleration_reward": 1
+            "neg_acceleration_reward": 1,
+            "lane_switching_reward": 0
         })
         return config
 
@@ -62,19 +63,39 @@ class CustEnvY(AbstractEnv):
         reward = sum(self.config.get(name, 0) * reward for name, reward in rewards.items())
         reward = utils.lmap(reward, [self.config["collision_reward"], 1], [0, 1]) # This already normalizes the rewards
         reward *= rewards["on_road_reward"]
-        return reward
+
+        speed_factor = 1
+        if self.vehicle.on_road:
+            speed_factor = self.vehicle.speed / 15
+
+        return reward * speed_factor
 
     def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
         _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
+        lane_id = self.vehicle.lane_index[0]
+        lane_switching_reward: int = 0
+        if self.current_lane is None:
+
+            self.current_lane = lane_id
+
+        if lane_id != self.current_lane:
+            if lane_id < self.current_lane:
+                print("PUNISHED")
+                lane_switching_reward = -10
+                self.current_lane = lane_id
+            else:
+                self.current_lane = lane_id
+
+
         return {
             "lane_centering_reward": 1/(1+self.config["lane_centering_cost"]*lateral**2),
             "action_reward": np.linalg.norm(action),
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
-            "neg_acceleration_reward": -10 if self.vehicle.speed < 0 else 3,
-            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else \
--100*self.config["on_road_reward"],
-            # "alive_reward": self.time / self.config["duration"]
+            "neg_acceleration_reward": -3 if self.vehicle.speed < 0 else 0,
+            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -3*self.config["on_road_reward"],
+            "alive_reward": self.time / self.config["duration"] if self.vehicle.on_road else 0,
+            "lane_switching_reward": lane_switching_reward,
         }
     def return_speed_and_velocity(self):
         print(self.vehicle.speed, self.vehicle.velocity)

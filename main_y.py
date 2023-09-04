@@ -13,7 +13,7 @@ TRAIN = True
 SAVE = False
 if __name__ == '__main__':
     # # Create the environment
-    # env = gym.make("rt-y-v0",render_mode ='human')
+    #env = gym.make("rt-y-v0",render_mode ='rgb_array')
     env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 42)
     # make_vec_env("rt-y-v0", n_envs=n_cpu, vec_env_cls=SubprocVecEnv,seed = 7113)
     env.reset()
@@ -24,7 +24,7 @@ if __name__ == '__main__':
                 learning_rate=5e-4,
                 buffer_size=15000,
                 learning_starts=300,
-                batch_size=16,
+                batch_size=128,
                 gamma=0.6,
                 train_freq=1,
                 gradient_steps=-1,
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         env.unwrapped.set_record_video_wrapper(env)
         env.configure({"simulation_frequency": 30})  # Higher FPS for rendering
         
-        for videos in range(3):
+        for videos in range(5):
             done = truncated = False
             obs, info = env.reset()
             while not (done or truncated):

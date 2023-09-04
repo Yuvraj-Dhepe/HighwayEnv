@@ -68,6 +68,8 @@ class AbstractEnv(gym.Env):
         self.render_mode = render_mode
         self.enable_auto_render = False
 
+        self.current_lane = None
+
         self.reset()
 
     @property
@@ -232,7 +234,7 @@ class AbstractEnv(gym.Env):
             raise NotImplementedError("The road and vehicle must be initialized in the environment implementation")
         # dt = 1 / self.config["policy_frequency"]
         self.time += 1 / self.config["policy_frequency"]
-        print(f"Time:{dt}")
+        #print(f"Time:{dt}")
         self._simulate(action)
 
         obs = self.observation_type.observe()
@@ -241,7 +243,7 @@ class AbstractEnv(gym.Env):
         truncated = self._is_truncated()
         info = self._info(obs, action)
         # print(f"Speed: {self.return_speed_and_velocity()}")
-        print(f"Current_Vehicle_Lane: {self.return_vehicle_index()}")
+        # print(f"Current_Vehicle_Lane: {self.return_vehicle_index()}")
         if self.render_mode == 'human':
             self.render()
 

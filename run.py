@@ -25,7 +25,7 @@ LOAD = True
 n_cpu = os.cpu_count()
 
 
-env = gym.make("rt-y-v0",render_mode = "human")
+env = gym.make("rt-y-v0", render_mode="human")
 obs, info = env.reset()
 done = False
 # env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 7113)
@@ -37,7 +37,7 @@ if LOAD == False:
 		ac = env.action_space.sample()
 		# ac = int(input())
 		# env.step(ac)
-		env.return_speed_and_velocity()
+		env.step(ac)
 else:
 	#obs, info = env.reset()
 	model = DQN.load("y_models/DQN_models/mlp_dqn1.zip", env = env)
