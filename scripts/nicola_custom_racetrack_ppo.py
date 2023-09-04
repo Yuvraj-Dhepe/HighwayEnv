@@ -8,7 +8,7 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 import highway_env.envs.nicola_custom_env
 
 
-TRAIN = False
+TRAIN = True
 
 if __name__ == '__main__':
     n_cpu = 12
@@ -21,18 +21,18 @@ if __name__ == '__main__':
                 n_steps=batch_size * 12 // n_cpu,
                 batch_size=batch_size,
                 n_epochs=20,
-                learning_rate=4e-4,
+                learning_rate=5e-4,
                 gamma=0.9,
                 verbose=2,
                 tensorboard_log=r"D:\Documents\GitHub\HighwayEnvGroup\tensorboard")
     # Train the model
     if TRAIN:
-        model.learn(total_timesteps=int(25e4))
-        model.save(r"D:\Documents\GitHub\HighwayEnvGroup/Models/model_v1")
+        model.learn(total_timesteps=int(1e6))
+        model.save(r"D:\Documents\GitHub\HighwayEnvGroup/Models/model_v4")
         del model
 
     # Run the algorithm
-    model = PPO.load(r"D:\Documents\GitHub\HighwayEnvGroup/models/model_v1", env=env)
+    model = PPO.load(r"D:\Documents\GitHub\HighwayEnvGroup/models/model_v4", env=env)
 
     env = gym.make("nicola_custom_env", render_mode="rgb_array")
     env = RecordVideo(env, video_folder="D:\Documents\GitHub\HighwayEnvGroup/videos", episode_trigger=lambda e: True)

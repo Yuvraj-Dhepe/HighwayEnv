@@ -49,12 +49,14 @@ class CustomRoadEnv(AbstractEnv):
             "collision_reward": -100,
             "lane_centering_cost": 4,
             "lane_centering_reward": 1,
-            "action_reward": -0.05,
+            "action_reward": -0.01,
             "on_road_reward": 1,
             "off_road_cost": -3,
             "backwards_driving_reward": -3,
             "controlled_vehicles": 1,
             "other_vehicles": 10,
+            "other_vehicles_top_speed": 12,
+            "agent_top_speed": 20,
             "screen_width": 600,
             "screen_height": 600,
             "centering_position": [0.5, 0.5],
@@ -64,10 +66,9 @@ class CustomRoadEnv(AbstractEnv):
     def _reward(self, action: np.ndarray) -> float:
         rewards = self._rewards(action)
         reward = sum(reward for name, reward in rewards.items())
-
         speed_factor = 1
         if self.vehicle.on_road:
-            speed_factor = self.vehicle.speed / 25
+            speed_factor = self.vehicle.speed / self.config["agent_top_speed"]
 
         return reward * speed_factor
 
@@ -81,9 +82,10 @@ class CustomRoadEnv(AbstractEnv):
             # custom on road reward and negative reward for getting of the lane
             "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else self.config["off_road_cost"],
             # custom alive reward that increases over time to give the model incentives to live longer
-            # "alive_reward": self.time / self.config["duration"] * 2,
+            "alive_reward": self.time / self.config["duration"] if self.vehicle.on_road else 0,
             # reward the car for going forward
-            "speed_reward": self.config["backwards_driving_reward"] if self.vehicle.speed < 0 else (self.vehicle.speed / self.config["action"]["target_speeds"][-1])
+            "speed_reward": self.config["backwards_driving_reward"] if self.vehicle.speed < 0
+            else max((self.vehicle.speed - self.config["other_vehicles_top_speed"]) / self.config["agent_top_speed"], 0)
         }
 
     def _is_terminated(self) -> bool:
@@ -227,7 +229,7 @@ class CustomRoadEnv(AbstractEnv):
                                                                              )"""
             # avoid going negative speeds
             controlled_vehicle.MIN_SPEED = 0
-            controlled_vehicle.MAX_SPEED = 12
+            controlled_vehicle.MAX_SPEED = self.config["agent_top_speed"]
 
             self.controlled_vehicles.append(controlled_vehicle)
             self.road.vehicles.append(controlled_vehicle)
@@ -240,7 +242,7 @@ class CustomRoadEnv(AbstractEnv):
                                                   low=0,
                                                   high=self.road.network.get_lane(random_lane_index).length
                                               ),
-                                              speed=3 + rng.uniform(high=3))
+                                              speed=rng.uniform(low=5, high=self.config["other_vehicles_top_speed"]))
             # Prevent early collisions
             for v in self.road.vehicles:
                 if np.linalg.norm(vehicle.position - v.position) < 20:
