@@ -30,4 +30,4 @@ _build
 # Docs
 docs/_build
 **jupyter_execute
-/videos/
+/videos/.*

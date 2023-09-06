@@ -38,7 +38,7 @@ class CustomRoadEnv(AbstractEnv):
                 "align_to_vehicle_axes": True
             },
             "action": {
-                "type": "DiscreteMetaAction",
+                "type": "DiscreteAction",
                 "longitudinal": True,
                 "lateral": True,
                 "target_speeds": [0, 10]
@@ -221,12 +221,12 @@ class CustomRoadEnv(AbstractEnv):
                 lane_from="a",
                 lane_to="b"
             )
-            controlled_vehicle = self.action_type.vehicle_class(self.road, vehicle.position, vehicle.heading, vehicle.speed)
+            """controlled_vehicle = self.action_type.vehicle_class(self.road, vehicle.position, vehicle.heading, vehicle.speed)"""
 
-            """controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index,
+            controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index,
                                                                              speed=0,
                                                                              longitudinal=rng.uniform(20, 50)
-                                                                             )"""
+                                                                             )
             # avoid going negative speeds
             controlled_vehicle.MIN_SPEED = 0
             controlled_vehicle.MAX_SPEED = self.config["agent_top_speed"]
