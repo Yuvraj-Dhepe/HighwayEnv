@@ -40,7 +40,7 @@ if LOAD == False:
 		env.step(ac)
 else:
 	#obs, info = env.reset()
-	model = DQN.load("y_models/DQN_models/mlp_dqn1.zip", env = env)
+	model = DQN.load("y_models/DQN_models/mlp_dqn6.zip", env = env)
 	while not done:
 		ac = env.action_space.sample()
 		env.step(ac)

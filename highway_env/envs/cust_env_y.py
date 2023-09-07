@@ -48,7 +48,7 @@ class CustEnvY(AbstractEnv):
             "show_trajectories": False,
             "render_agent": True,
             "offscreen_rendering": False,
-            "on_road_reward": 1,
+            "on_road_reward": 10,
             "collision_reward": -1,
             "lane_centering_cost": 4,
             "lane_centering_reward": 1,
@@ -60,14 +60,15 @@ class CustEnvY(AbstractEnv):
 
     def _reward(self, action: np.ndarray) -> float:
         rewards = self._rewards(action)
+        print(rewards)
         reward = sum(self.config.get(name, 0) * reward for name, reward in rewards.items())
-        reward = utils.lmap(reward, [self.config["collision_reward"], 1], [0, 1]) # This already normalizes the rewards
-        reward *= rewards["on_road_reward"]
-
+        print(f"Rewards: {reward}")
+        # reward = utils.lmap(reward, [-30, +30], [0, 1]) # This already normalizes the rewards
+        # print(f"Rewards: {reward}")
         speed_factor = 1
         if self.vehicle.on_road:
-            speed_factor = self.vehicle.speed / 15
-
+            speed_factor = self.vehicle.speed
+        print(f"Reward: {reward * speed_factor}")
         return reward * speed_factor
 
     def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
@@ -80,7 +81,7 @@ class CustEnvY(AbstractEnv):
 
         if lane_id != self.current_lane:
             if lane_id < self.current_lane:
-                print("PUNISHED")
+                # print("PUNISHED")
                 lane_switching_reward = -10
                 self.current_lane = lane_id
             else:
@@ -92,9 +93,9 @@ class CustEnvY(AbstractEnv):
             "action_reward": np.linalg.norm(action),
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
-            "neg_acceleration_reward": -3 if self.vehicle.speed < 0 else 0,
-            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -3*self.config["on_road_reward"],
-            "alive_reward": self.time / self.config["duration"] if self.vehicle.on_road else 0,
+            "neg_acceleration_reward": -60 if self.vehicle.speed < 0 else 0,
+            "on_road_reward": self.config["on_road_reward"] if self.vehicle.on_road else -0.5*self.config["on_road_reward"],
+            "alive_reward": self.time / self.config["duration"] if self.vehicle.on_road else -10,
             "lane_switching_reward": lane_switching_reward,
         }
     def return_speed_and_velocity(self):
@@ -245,7 +246,7 @@ class CustEnvY(AbstractEnv):
                 self.road.network.random_lane_index(rng)
             controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index, speed=None,
                                                                              longitudinal=rng.uniform(20, 50))
-            # controlled_vehicle.MIN_SPEED = 0
+            controlled_vehicle.MIN_SPEED = 0
             self.controlled_vehicles.append(controlled_vehicle)
             self.road.vehicles.append(controlled_vehicle)
             
