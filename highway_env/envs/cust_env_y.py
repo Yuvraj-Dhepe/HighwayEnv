@@ -40,7 +40,7 @@ class CustEnvY(AbstractEnv):
             "policy_frequency": 5,
             "duration": 90,
             "controlled_vehicles": 1,
-            "other_vehicles": 6,
+            "other_vehicles": 15,
             "screen_width": 600,
             "screen_height": 600,
             "centering_position": [0.5, 0.5],
@@ -246,7 +246,7 @@ class CustEnvY(AbstractEnv):
                 self.road.network.random_lane_index(rng)
             controlled_vehicle = self.action_type.vehicle_class.make_on_lane(self.road, lane_index, speed=None,
                                                                              longitudinal=rng.uniform(20, 50))
-            controlled_vehicle.MIN_SPEED = 0
+            #controlled_vehicle.MIN_SPEED = 0
             self.controlled_vehicles.append(controlled_vehicle)
             self.road.vehicles.append(controlled_vehicle)
             
