@@ -68,6 +68,8 @@ class AbstractEnv(gym.Env):
         self.render_mode = render_mode
         self.enable_auto_render = False
 
+        self.current_lane = None
+
         self.reset()
 
     @property

@@ -13,7 +13,19 @@ from highway_env.envs.simple_env import *
 from highway_env.envs.cust_env_y import *
 from gymnasium.envs.registration import register
 from highway_env.envs.basic_env import *
-from  highway_env.envs.nicola_custom_env import *
+from highway_env.envs.nicola_custom_env import *
+from highway_env.envs.default_race_track_test_env import *
+from highway_env.envs.custom_reward_race_track import *
+
+register(
+    id="custom_reward_test_env",
+    entry_point="highway_env.envs:CustomRewardRacetrackTestEnv"
+)
+
+register(
+    id='default_test_env',
+    entry_point='highway_env.envs:DefaultRaceTrackTestEnv'
+)
 
 register(
     id='rt-m-v0',
