@@ -9,8 +9,8 @@ import os
 
 n_cpu = 6
 
-TRAIN = True
-SAVE = False
+TRAIN = False
+SAVE = True
 if __name__ == '__main__':
     name = 'mlp_ppo1'
     save_path = "./y_models/DQN_models/"+name
