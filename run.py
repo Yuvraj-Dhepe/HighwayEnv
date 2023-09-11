@@ -31,20 +31,24 @@ done = False
 # env = make_vec_env('rt-y-v0',n_envs = n_cpu,vec_env_cls = SubprocVecEnv,seed = 7113)
 # Rest settings for race-track are not changed, accept longitudinal = True, and Discrete Action being used
 if LOAD == False:
-	#print(env.action_space.sample())
-	while not done:
-		# print(env.get_available_actions())
-		ac = env.action_space.sample()
-		# ac = int(input())
-		# env.step(ac)
-		env.step(ac)
+    #print(env.action_space.sample())
+    while not done:
+        # print(env.get_available_actions())
+        ac = env.action_space.sample()
+        # ac = int(input())
+        # env.step(ac)
+        env.step(ac)
 else:
-	#obs, info = env.reset()
-	model = DQN.load("y_models/DQN_models/mlp_dqn6.zip", env = env)
-	while not done:
-		ac = env.action_space.sample()
-		env.step(ac)
-		# env.return_speed_and_velocity()
+    env = gym.make("racetrack-v0", render_mode="human")
+    obs, info = env.reset()
+    loaded_model = DQN.load("y_models/DQN_models/mlp_dqn6.zip", env = env)
+    while not done:
+        action, _states = loaded_model.predict(obs, deterministic=False)
+        # Get reward
+        obs, reward, done, truncated, info = env.step(action)
+        # Render
+        env.render()
+        # env.return_speed_and_velocity()
 
 # print(env.action_space)
 # for i in range(1000):
