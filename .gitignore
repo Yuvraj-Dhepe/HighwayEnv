@@ -1,7 +1,7 @@
 # Ignored Folders
 venv/
 y_models/
-models/
+models_final_tests/
 
 # Compiled sources
 *.pyc

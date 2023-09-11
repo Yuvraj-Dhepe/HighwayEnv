@@ -216,7 +216,7 @@ class LPV(object):
         else:
             self.coordinates = (np.eye(a0.shape[0]), np.eye(a0.shape[0]))
 
-        # Forward coordinates change of states and models
+        # Forward coordinates change of states and models_final_tests
         self.a0 = self.change_coordinates(self.a0, matrix=True)
         self.da = self.change_coordinates(self.da, matrix=True)
         self.b = self.change_coordinates(self.b, offset=False)

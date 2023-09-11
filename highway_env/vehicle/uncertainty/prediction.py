@@ -226,7 +226,7 @@ class IntervalVehicle(LinearVehicle):
         self.interval.heading = x_i_lat[:, 1]
 
     def predictor_init(self) -> None:
-        """Initialize the LPV models used for interval prediction."""
+        """Initialize the LPV models_final_tests used for interval prediction."""
         position_i = self.interval.position
         target_lane = self.road.network.get_lane(self.target_lane_index)
         longi_i, lat_i = interval_absolute_to_local(position_i, target_lane)
@@ -283,7 +283,7 @@ class IntervalVehicle(LinearVehicle):
         return polytope(a_theta, parameter_box)
 
     def get_front_interval(self) -> "VehicleInterval":
-        # TODO: For now, we assume the front vehicle follows the models' front vehicle
+        # TODO: For now, we assume the front vehicle follows the models_final_tests' front vehicle
         front_vehicle, _ = self.road.neighbour_vehicles(self)
         if front_vehicle:
             if isinstance(front_vehicle, IntervalVehicle):

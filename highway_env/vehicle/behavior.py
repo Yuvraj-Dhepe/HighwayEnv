@@ -82,7 +82,7 @@ class IDMVehicle(ControlledVehicle):
         Execute an action.
 
         For now, no action is supported because the vehicle takes all decisions
-        of acceleration and lane changes on its own, based on the IDM and MOBIL models.
+        of acceleration and lane changes on its own, based on the IDM and MOBIL models_final_tests.
 
         :param action: the action
         """

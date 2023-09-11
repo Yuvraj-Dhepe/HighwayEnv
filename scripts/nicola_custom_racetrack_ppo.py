@@ -32,7 +32,7 @@ if __name__ == '__main__':
         del model
 
     # Run the algorithm
-    model = PPO.load(r"D:\Documents\GitHub\HighwayEnvGroup/models/model_v4", env=env)
+    model = PPO.load(r"D:\Documents\GitHub\HighwayEnvGroup/models_final_tests/model_v4", env=env)
 
     env = gym.make("nicola_custom_env", render_mode="rgb_array")
     env = RecordVideo(env, video_folder="D:\Documents\GitHub\HighwayEnvGroup/videos", episode_trigger=lambda e: True)

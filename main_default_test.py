@@ -45,7 +45,7 @@ if __name__ == '__main__':
     )
 
     # model_ppo.learn(total_timesteps=int(1e6), progress_bar=False)
-    # model_ppo.save(r"./models/model_ppo")
+    # model_ppo.save(r"./models_final_tests/model_ppo")
 
     model_dqn.learn(total_timesteps=int(1e6))
-    model_dqn.save("./models/model_dqn")
+    model_dqn.save("./models_final_tests/model_dqn")
