@@ -35,8 +35,8 @@ class RacetrackEnv(AbstractEnv):
                 "align_to_vehicle_axes": True
             },
             "action": {
-                "type": "ContinuousAction",
-                "longitudinal": False,
+                "type": "DiscreteAction",
+                "longitudinal": True,
                 "lateral": True,
                 "target_speeds": [0, 5, 10]
             },
@@ -48,7 +48,7 @@ class RacetrackEnv(AbstractEnv):
             "lane_centering_reward": 1,
             "action_reward": -0.3,
             "controlled_vehicles": 1,
-            "other_vehicles": 1,
+            "other_vehicles": 10,
             "screen_width": 600,
             "screen_height": 600,
             "centering_position": [0.5, 0.5],
