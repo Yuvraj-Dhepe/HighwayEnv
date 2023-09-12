@@ -1,5 +1,5 @@
 import numpy as np
-from stable_baselines3 import DQN
+from stable_baselines3 import DQN, PPO
 # from highway_env import utils
 # from highway_env.envs.common.abstract import AbstractEnv
 # from highway_env.envs.common.action import Action
@@ -21,7 +21,7 @@ from stable_baselines3.common.env_util import make_vec_env
 import os
 import multiprocessing
 
-LOAD = True
+LOAD = False
 n_cpu = os.cpu_count()
 
 
@@ -39,9 +39,9 @@ if LOAD == False:
         # env.step(ac)
         env.step(ac)
 else:
-    env = gym.make("racetrack-v0", render_mode="human")
+    env = gym.make("rt-y-v0", render_mode="human")
     obs, info = env.reset()
-    loaded_model = DQN.load("y_models/DQN_models/mlp_dqn6.zip", env = env)
+    loaded_model = PPO.load("y_models/DQN_models/model_ppo_custom.zip", env = env)
     while not done:
         action, _states = loaded_model.predict(obs, deterministic=False)
         # Get reward

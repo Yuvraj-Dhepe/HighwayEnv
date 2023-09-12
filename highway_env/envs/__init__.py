@@ -39,3 +39,13 @@ register(
     id='nicola_racetrack_v2',
     entry_point='highway_env.envs:CustomRoadEnv'
 )
+
+register(
+    id="custom_reward_test_env",
+    entry_point="highway_env.envs:CustomRewardRacetrackTestEnv"
+)
+
+register(
+    id='default_test_env',
+    entry_point='highway_env.envs:DefaultRaceTrackTestEnv'
+)

@@ -12,7 +12,7 @@ n_cpu = 6
 TRAIN = False
 SAVE = True
 if __name__ == '__main__':
-    name = 'mlp_ppo1'
+    name = 'model_dqn_custom'
     save_path = "./y_models/DQN_models/"+name
     model = DQN if  'dqn' in name else PPO
     steps = int(1e6)
