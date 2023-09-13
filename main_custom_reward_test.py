@@ -9,11 +9,9 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 import gymnasium as gym
 
 if __name__ == '__main__':
-    algorthm_names = ["PPO", "SAC", "DQN"]
-
-    n_cpu = 8
+    n_cpu = 12
     batch_size = 64
-    env_ppo = make_vec_env("custom_reward_test_env", n_envs=n_cpu,  seed=7113)
+    env_ppo = make_vec_env("custom_reward_test_env", n_envs=n_cpu, seed=7113)
 
     # Create the model
     model_ppo = PPO("MlpPolicy",
@@ -25,7 +23,8 @@ if __name__ == '__main__':
                 learning_rate=5e-4,
                 gamma=0.9,
                 verbose=2,
-                tensorboard_log="./tensorboard")
+                tensorboard_log="./new_tensorboard")
+
 
     env_dqn = make_vec_env("custom_reward_test_env", n_envs=n_cpu, seed=7113)
     model_dqn = DQN(
@@ -34,18 +33,18 @@ if __name__ == '__main__':
         policy_kwargs=dict(net_arch=[256, 256]),
         learning_rate=5e-4,
         buffer_size=15000,
-        learning_starts=200,
-        batch_size=batch_size,
-        gamma=0.8,
+        learning_starts=300,
+        batch_size=64,
+        gamma=0.6,
         train_freq=1,
-        gradient_steps=1,
-        target_update_interval=50,
+        gradient_steps=-1,
+        target_update_interval=30,
         verbose=1,
-        tensorboard_log="./tensorboard"
+        tensorboard_log="./new_tensorboard"
     )
 
     model_ppo.learn(total_timesteps=int(1e6), progress_bar=False)
-    model_ppo.save(r"./models_final_tests/model_ppo_custom")
+    model_ppo.save(r"./models_final_tests/model_ppo_custom_v2")
 
     model_dqn.learn(total_timesteps=int(1e6))
-    model_dqn.save("./models_final_tests/model_dqn_custom")
+    model_dqn.save("./models_final_tests/model_dqn_custom_v2")
