@@ -35,8 +35,8 @@ class CustEnvY(AbstractEnv):
                 "align_to_vehicle_axes": True
             },
             "action": {
-                "type": "ContinuousAction",
-                "longitudinal": False,
+                "type": "DiscreteAction",
+                "longitudinal": True,
                 "lateral": True,
                 "target_speeds": [0, 5, 10]
             },

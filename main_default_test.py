@@ -8,6 +8,9 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 # Environment
 import gymnasium as gym
 
+TRAIN = False
+RECORD = True
+
 if __name__ == '__main__':
     algorthm_names = ["PPO", "SAC", "DQN"]
 
@@ -43,9 +46,31 @@ if __name__ == '__main__':
         verbose=1,
         tensorboard_log="./tensorboard"
     )
+    if TRAIN:
+        model_ppo.learn(total_timesteps=int(1e6), progress_bar=False)
+        model_ppo.save(r"./models_final_tests/model_ppo")
 
-    # model_ppo.learn(total_timesteps=int(1e6), progress_bar=False)
-    # model_ppo.save(r"./models_final_tests/model_ppo")
+        model_dqn.learn(total_timesteps=int(1e6))
+        model_dqn.save("./models_final_tests/model_dqn")
 
-    model_dqn.learn(total_timesteps=int(1e6))
-    model_dqn.save("./models_final_tests/model_dqn")
+    if RECORD:
+        env_dqn = gym.make('default_test_env', render_mode="rgb_array")
+        env_ppo = gym.make('default_test_env', render_mode="rgb_array")
+        model_dqn = DQN.load(r"./models_final_tests/model_dqn", env=env_dqn)
+        model_ppo = PPO.load(r"./models_final_tests/model_ppo",env=env_ppo)
+
+        env = RecordVideo(env_ppo, video_folder="D:\Documents\GitHub\HighwayEnvGroup/videos/default_test_ppo", episode_trigger=lambda e: True)
+        env.unwrapped.set_record_video_wrapper(env)
+
+        for video in range(10):
+            done = truncated = False
+            obs, info = env.reset()
+            while not (done or truncated):
+                # Predict
+                action, _states = model_ppo.predict(obs, deterministic=True)
+                # Get reward
+                obs, reward, done, truncated, info = env.step(action)
+                # Render
+                env.render()
+
+        env.close()
