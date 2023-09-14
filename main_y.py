@@ -12,7 +12,7 @@ n_cpu = 6
 TRAIN = False
 SAVE = True
 if __name__ == '__main__':
-    name = 'model_dqn_custom'
+    name = 'mlp_dqn6'
     save_path = "./y_models/DQN_models/"+name
     model = DQN if  'dqn' in name else PPO
     steps = int(1e6)
@@ -61,9 +61,9 @@ if __name__ == '__main__':
         env = gym.make('rt-y-v0', render_mode = 'rgb_array')
         obs, info = env.reset()
         loaded_model = model.load(save_path+'.zip', env=env)
-        env = RecordVideo(env, video_folder="./y_models/vids/"+name, episode_trigger=lambda e: True)
+        env = RecordVideo(env, video_folder="./y_models/vids3/"+name, episode_trigger=lambda e: True)
         env.unwrapped.set_record_video_wrapper(env)
-        env.configure({"simulation_frequency": 30})  # Higher FPS for rendering
+        env.configure({"simulation_frequency": 15})  # Higher FPS for rendering
         
         for videos in range(5):
             done = truncated = False

@@ -60,15 +60,15 @@ class CustEnvY(AbstractEnv):
 
     def _reward(self, action: np.ndarray) -> float:
         rewards = self._rewards(action)
-        print(rewards)
+        # print(rewards)
         reward = sum(self.config.get(name, 0) * reward for name, reward in rewards.items())
-        print(f"Rewards: {reward}")
+        # print(f"Rewards: {reward}")
         # reward = utils.lmap(reward, [-30, +30], [0, 1]) # This already normalizes the rewards
         # print(f"Rewards: {reward}")
         speed_factor = 1
         if self.vehicle.on_road:
             speed_factor = self.vehicle.speed
-        print(f"Reward: {reward * speed_factor}")
+        # print(f"Reward: {reward * speed_factor}")
         return reward * speed_factor
 
     def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
